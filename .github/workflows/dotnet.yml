@@ -5,6 +5,9 @@ on:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+env:
+  PUBLISH_PATH: '.'
+  AZURE_WEB_APP: 'GithubWebApp123'
 
 jobs:
   build:
@@ -23,3 +26,17 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: dotnet test --no-build --verbosity normal
+    - name: dotnet Publish
+      run: dotnet publish--Configuration Release -o '${{env.PUBLISH_PATH}}/publish'
+      
+    - name: Azure Web App Deploy
+      uses: Azure/webapps-deploy@v2
+      with:
+       # Name of the Azure Web App
+       app-name: '${{env.AZURE_WEB_APP}}'
+       # Applies to Web Apps(Windows and Linux) and Web App Containers(linux). Multi container scenario not supported. Publish profile (*.publishsettings) file contents with Web Deploy secrets
+       publish-profile: '${{secrets.AZURE_APP_PUBLISH_PROFILE}}'
+       # Enter an existing Slot other than the Production slot
+       package: '${{env.PUBLISH_PATH}}/publish'
+     
+     
